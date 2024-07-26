@@ -3,6 +3,7 @@ from fastapi import HTTPException
 from config.db_config import get_db_connection
 from models.user_model import User
 from fastapi.encoders import jsonable_encoder
+from datetime import datetime
 
 class UserController:
     def create_user(self, user: User):   
@@ -18,6 +19,36 @@ class UserController:
         finally:
             conn.close()
         
+    
+    def get_dictypedocument(self):
+        try:    
+            conn = get_db_connection()
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("SELECT id, name FROM parameters_values WHERE parameter_id = 1")
+            schools = cursor.fetchall() 
+    
+            conn.close()
+    
+            return schools
+        except mysql.connector.Error as err:
+            raise HTTPException(status_code=500, detail=str(err))
+        finally:
+            conn.close()
+
+    def get_dicrol(self):
+        try:    
+            conn = get_db_connection()
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("SELECT id, name FROM roles")
+            schools = cursor.fetchall() 
+    
+            conn.close()
+    
+            return schools
+        except mysql.connector.Error as err:
+            raise HTTPException(status_code=500, detail=str(err))
+        finally:
+            conn.close()
 
     def get_user(self, user_id: int):
         try:
@@ -57,25 +88,27 @@ class UserController:
         try:
             conn = get_db_connection()
             cursor = conn.cursor()
-            cursor.execute("SELECT * FROM users")
+            cursor.execute("""SELECT u.id, u.name, u.last_name, u.email, u.phone, u.document_number, u.password, u.state, dt.name 
+                            AS document_type_name, r.name AS role_name, u.created_at, u.updated_at FROM users u 
+                            JOIN parameters_values dt ON u.document_type_id = dt.id JOIN roles r ON u.role_id = r.id 
+                            WHERE u.deleted_at IS NULL;""")
             result = cursor.fetchall()
             payload = []
             content = {} 
             for data in result:
                 content={
                     'id':data[0],
-                    'role_id':data[1],
-                    'name':data[2],
-                    'last_name':data[3],
-                    'email':data[4],
-                    'phone':data[5],
-                    'document_type_id':data[6],
-                    'document_number':data[7],
-                    'password':data[8],
-                    'state':data[9],
+                    'name':data[1],
+                    'last_name':data[2],
+                    'email':data[3],
+                    'phone':data[4],
+                    'document_number':data[5],
+                    'password':data[6],
+                    'state':data[7],
+                    'document_type_name':data[8],
+                    'role_name':data[9],
                     'created_at':data[10],
-                    'updated_at':data[11],
-                    'deleted_at':data[12],
+                    'updated_at':data[11]
                 }
                 payload.append(content)
                 content = {}
@@ -107,14 +140,13 @@ class UserController:
         try:
             conn = get_db_connection()
             cursor = conn.cursor()
-            cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
+            deleted_at = datetime.now()
+            cursor.execute("UPDATE users SET deleted_at = %s WHERE id = %s", (deleted_at, user_id))
             conn.commit()
-            conn.close()
             return {"resultado": "Usuario eliminado"}
         except mysql.connector.Error as err:
             conn.rollback()
         finally:
             conn.close()  
-       
 
 ##user_controller = UserController()

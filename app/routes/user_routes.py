@@ -18,6 +18,16 @@ async def get_user(user_id: int):
     rpta = nuevo_usuario.get_user(user_id)
     return rpta
 
+@router.get("/get_dictypedocument")
+async def get_dictypedocument():
+    rpta = nuevo_usuario.get_dictypedocument()
+    return rpta
+
+@router.get("/get_dicrol")
+async def get_dicrol():
+    rpta = nuevo_usuario.get_dicrol()
+    return rpta
+
 @router.get("/get_users/")
 async def get_users():
     rpta = nuevo_usuario.get_users()

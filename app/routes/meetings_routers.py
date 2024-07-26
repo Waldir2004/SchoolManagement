@@ -22,6 +22,7 @@ async def get_dicschools():
     rpta = nuevo_usuario.get_dicschools()
     return rpta
 
+
 @router.get("/get_meetings")
 async def get_meetings():
     rpta = nuevo_usuario.get_meetings()

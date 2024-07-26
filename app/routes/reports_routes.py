@@ -1,6 +1,9 @@
 from fastapi import APIRouter, HTTPException
 from controllers.reports_controller import *
 from models.reports_model import reports
+from models.user_model import User
+from fastapi import APIRouter, Query
+from typing import List
 
 router = APIRouter()
 
@@ -30,4 +33,9 @@ async def edit_report(id:int, reports:reports):
 @router.delete("/delete_reports/{reports_id}")
 async def delete_reports(reports_id: int):
     rpta = nuevo_usuario.delete_reports(reports_id)
+    return rpta
+
+@router.get("/search_users", response_model=List[User])
+async def search_users(name: str = Query(..., min_length=1)):
+    rpta = nuevo_usuario.search_users(name)
     return rpta

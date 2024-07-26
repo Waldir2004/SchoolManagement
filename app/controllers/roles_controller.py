@@ -3,6 +3,7 @@ from fastapi import HTTPException
 from config.db_config import get_db_connection
 from models.roles_model import roles
 from fastapi.encoders import jsonable_encoder
+from datetime import datetime
 
 class Rol_Controller:
         
@@ -51,7 +52,8 @@ class Rol_Controller:
         try:
             conn = get_db_connection()
             cursor = conn.cursor()
-            cursor.execute("SELECT * FROM roles")
+            cursor.execute("""SELECT r.id, r.name, pv.name AS state FROM roles r 
+                        JOIN parameters_values pv ON r.state = pv.id WHERE r.deleted_at IS NULL""")
             result = cursor.fetchall()
             payload = []
             content = {} 
@@ -91,10 +93,10 @@ class Rol_Controller:
         try:
             conn = get_db_connection()
             cursor = conn.cursor()
-            cursor.execute("DELETE FROM roles WHERE id = %s", (roles_id,))
+            deleted_at = datetime.now()
+            cursor.execute("UPDATE roles SET deleted_at = %s WHERE id = %s", (deleted_at, roles_id))
             conn.commit()
-            conn.close()
-            return {"resultado": "Rol eliminado"}
+            return {"resultado": "Colegio eliminado"}
         except mysql.connector.Error as err:
             conn.rollback()
         finally:

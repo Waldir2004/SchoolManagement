@@ -27,7 +27,7 @@ async def edit_rol(id:int, roles:roles):
     rpta = nuevo_usuario.edit_rol(id,roles)
     return rpta
 
-@router.delete("/delete_rol/{roles_id}")
+@router.put("/delete_rol/{roles_id}")
 async def delete_rol(roles_id: int):
     rpta = nuevo_usuario.delete_rol(roles_id)
     return rpta

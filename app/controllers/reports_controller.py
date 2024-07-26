@@ -53,17 +53,22 @@ class Reports_Controller:
         try:
             conn = get_db_connection()
             cursor = conn.cursor()
-            cursor.execute("SELECT * FROM reports")
+            cursor.execute("""SELECT reports.id, reports.type_report_id, users.name AS reporter_name, reported_users.name 
+                AS reported_user_name, reports.description FROM reports 
+                JOIN users AS users ON reports.reporter_id = 
+                users.id JOIN users AS reported_users 
+                ON reports.reported_user_id 
+                = reported_users.id""")
             result = cursor.fetchall()
             payload = []
             content = {} 
             for data in result:
-                content={
-                    'id':int(data[0]),
-                    'type_report_id':data[1],
-                    'reporter_id':data[2],
-                    'reported_user_id':data[3],
-                    'description':data[4]
+                content = {
+                    'id': int(data[0]),
+                    'type_report_id': data[1],
+                    'reporter_id': data[2],
+                    'reported_user_id': data[3],
+                    'description': data[4]
                 }
                 payload.append(content)
                 content = {}
@@ -75,16 +80,20 @@ class Reports_Controller:
                 
         except mysql.connector.Error as err:
             conn.rollback()
+            raise HTTPException(status_code=500, detail="Error al obtener los reportes")
         finally:
             conn.close()
-    
-    def edit_report(self, reports_id:int, reports:reports):
+
+    def edit_report( self, report_id: int, reports: dict):
         try:
             conn = get_db_connection()
             cursor = conn.cursor()
-            cursor.execute("UPDATE reports SET type_report_id = %s, reporter_id = %s, reported_user_id = %s, description = %s WHERE id =%s", (reports.type_report_id, reports.reporter_id, reports.reported_user_id, reports.description, reports_id))
+            cursor.execute("""
+                UPDATE reports 
+                SET type_report_id = %s, reporter_id = %s, reported_user_id = %s, description = %s 
+                WHERE id = %s
+            """, (reports['type_report_id'], reports['reporter_id'], reports['reported_user_id'], reports['description'], report_id))
             conn.commit()
-            conn.close()
             return {"resultado": "Report edited"}
         except mysql.connector.Error as err:
             conn.rollback()
@@ -101,5 +110,19 @@ class Reports_Controller:
             return {"resultado": "Report eliminado"}
         except mysql.connector.Error as err:
             conn.rollback()
+        finally:
+            conn.close()
+    
+    def search_users(self, name: str):
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("SELECT id, name FROM users WHERE name LIKE %s", ('%' + name + '%',))
+            result = cursor.fetchall()
+            conn.close()
+            return result
+        except mysql.connector.Error as err:
+            conn.rollback()
+            return {"error": str(err)}
         finally:
             conn.close()

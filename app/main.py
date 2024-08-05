@@ -14,6 +14,7 @@ from routes.evidence_activities_routers import router as evidence_activities_rou
 from routes.meetings_routers import router as meetings_routers
 from routes.reports_routes import router as reports_router
 from routes.reports_evidencies_routers import router as reports_evidencies_router
+from routes.auth_routes import router as auth_routes
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -48,6 +49,7 @@ app.include_router(evidence_activities_routers)
 app.include_router(meetings_routers)
 app.include_router(reports_router)
 app.include_router(reports_evidencies_router)
+app.include_router(auth_routes)
 
 if __name__ == "__main__":
     import uvicorn

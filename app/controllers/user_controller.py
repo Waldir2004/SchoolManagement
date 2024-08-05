@@ -24,7 +24,7 @@ class UserController:
         try:    
             conn = get_db_connection()
             cursor = conn.cursor(dictionary=True)
-            cursor.execute("SELECT id, name FROM parameters_values WHERE parameter_id = 1")
+            cursor.execute("SELECT id, name FROM parameters_values WHERE parameter_id = 3")
             schools = cursor.fetchall() 
     
             conn.close()
@@ -148,5 +148,21 @@ class UserController:
             conn.rollback()
         finally:
             conn.close()  
+
+    def get_admin(self, role_id: int):
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT id, name FROM users WHERE role_id = %s
+            """, (role_id,))
+            result = cursor.fetchall()
+            payload = [{'id': data[0], 'name': data[1]} for data in result]
+            json_data = jsonable_encoder(payload)
+            return {"resultado": json_data}
+        except mysql.connector.Error as err:
+            conn.rollback()
+        finally:
+            conn.close()
 
 ##user_controller = UserController()

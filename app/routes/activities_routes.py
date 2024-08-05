@@ -31,3 +31,7 @@ async def edit_activities(id:int, activities:activities):
 async def delete_activities(activities_id: int):
     rpta = nuevo_usuario.delete_activities(activities_id)
     return rpta
+
+@router.get("/get_parameter_values/{parameter_id}")
+def get_parameter_values(parameter_id: int):
+    return nuevo_usuario.get_parameter_values(parameter_id)

@@ -57,7 +57,13 @@ class Activities_Controller:
         try:
             conn = get_db_connection()
             cursor = conn.cursor()
-            cursor.execute("SELECT * FROM activities")
+            cursor.execute("""
+            SELECT a.id, a.title, a.description, a.start_date, a.end_date, s.name AS school_id, pv.name AS state_id
+            FROM activities a 
+            JOIN schools s ON a.school_id = s.id
+            JOIN parameters_values pv ON a.state_id = pv.id
+            WHERE s.deleted_at IS NULL
+            """)
             result = cursor.fetchall()
             payload = []
             content = {} 
@@ -105,6 +111,22 @@ class Activities_Controller:
             conn.commit()
             conn.close()
             return {"resultado": "Activities eliminado"}
+        except mysql.connector.Error as err:
+            conn.rollback()
+        finally:
+            conn.close()
+
+    def get_parameter_values(self, parameter_id: int):
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT id, name FROM parameters_values WHERE parameter_id = %s
+            """, (parameter_id,))
+            result = cursor.fetchall()
+            payload = [{'id': data[0], 'name': data[1]} for data in result]
+            json_data = jsonable_encoder(payload)
+            return {"resultado": json_data}
         except mysql.connector.Error as err:
             conn.rollback()
         finally:

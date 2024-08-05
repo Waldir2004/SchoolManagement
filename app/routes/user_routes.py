@@ -42,3 +42,7 @@ async def edit_user(id:int, user:User):
 async def delete_user(user_id: int):
     rpta = nuevo_usuario.delete_user(user_id)
     return rpta
+
+@router.get("/get_admin/{role_id}")
+def get_admin(role_id: int):
+    return nuevo_usuario.get_admin(role_id)
